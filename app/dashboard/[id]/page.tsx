@@ -3,12 +3,13 @@ import { auth } from '@/auth';
 import { notFound, redirect } from 'next/navigation';
 import { triggerScan } from '@/app/lib/actions';
 
-export default async function Page({ params }: { params: { id: string } }) {
+export default async function Page({ params }: { params: Promise<{ id: string }> }) {
+    const { id } = await params;
     const session = await auth();
     if (!session?.user?.id) redirect('/login');
 
     const target = await prisma.targetURL.findUnique({
-        where: { id: params.id },
+        where: { id },
         include: {
             scanResults: {
                 orderBy: { createdAt: 'desc' },
