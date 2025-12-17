@@ -4,9 +4,17 @@ import { notFound, redirect } from 'next/navigation';
 import { triggerScan } from '@/app/lib/actions';
 
 export default async function Page({ params }: { params: Promise<{ id: string }> }) {
-    const { id } = await params;
+    const resolvedParams = await params;
+    console.log('Page params:', resolvedParams);
+    const { id } = resolvedParams;
     const session = await auth();
     if (!session?.user?.id) redirect('/login');
+
+    console.log('Querying for ID:', id);
+
+    if (!id) {
+        notFound();
+    }
 
     const target = await prisma.targetURL.findUnique({
         where: { id },
