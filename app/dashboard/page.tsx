@@ -1,4 +1,5 @@
 import { getTargetUrls } from '@/app/lib/data';
+import { triggerScan } from '@/app/lib/actions';
 import Link from 'next/link';
 
 export default async function Page() {
@@ -62,9 +63,22 @@ export default async function Page() {
                                                 {target.scanResults[0]?.status || 'Never'}
                                             </td>
                                             <td className="relative whitespace-nowrap py-4 pl-3 pr-4 text-right text-sm font-medium sm:pr-6">
-                                                <Link href={`/dashboard/${target.id}`} className="text-indigo-600 hover:text-indigo-900">
-                                                    View<span className="sr-only">, {target.name}</span>
-                                                </Link>
+                                                <div className="flex justify-end gap-2">
+                                                    <form action={async () => {
+                                                        'use server';
+                                                        await triggerScan(target.id);
+                                                    }}>
+                                                        <button
+                                                            type="submit"
+                                                            className="text-indigo-600 hover:text-indigo-900 bg-indigo-50 px-3 py-1 rounded-md"
+                                                        >
+                                                            Scan Now
+                                                        </button>
+                                                    </form>
+                                                    <Link href={`/dashboard/${target.id}`} className="text-indigo-600 hover:text-indigo-900 px-3 py-1 flex items-center">
+                                                        View<span className="sr-only">, {target.name}</span>
+                                                    </Link>
+                                                </div>
                                             </td>
                                         </tr>
                                     ))}
