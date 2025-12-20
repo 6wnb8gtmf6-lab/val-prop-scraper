@@ -1,5 +1,6 @@
 import NextAuth from "next-auth"
 import Credentials from "next-auth/providers/credentials"
+import WebAuthn from "next-auth/providers/webauthn"
 import { PrismaAdapter } from "@auth/prisma-adapter"
 import { prisma } from "@/lib/prisma"
 import bcrypt from "bcryptjs"
@@ -7,6 +8,7 @@ import { z } from "zod"
 import { authConfig } from "./auth.config"
 
 export const { handlers, auth, signIn, signOut } = NextAuth({
+    adapter: PrismaAdapter(prisma),
     ...authConfig,
     providers: [
         Credentials({
@@ -23,6 +25,8 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
                     const { email, password } = parsedCredentials.data;
                     const user = await prisma.user.findUnique({ where: { email } });
                     if (!user) return null;
+                    // Passwords might be null for users created via passkey
+                    if (!user.password) return null;
                     const passwordsMatch = await bcrypt.compare(password, user.password);
                     if (passwordsMatch) return user;
                 }
@@ -30,6 +34,7 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
                 return null;
             },
         }),
+        WebAuthn,
     ],
     session: {
         strategy: "jwt",
@@ -48,5 +53,8 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
             }
             return session;
         },
+    },
+    experimental: {
+        enableWebAuthn: true,
     },
 })

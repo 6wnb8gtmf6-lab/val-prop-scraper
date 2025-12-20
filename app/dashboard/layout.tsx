@@ -48,8 +48,8 @@ export default async function DashboardLayout({
                         Account
                     </div>
                     <Link
-                        href="#"
-                        className="group flex items-center px-2 py-2 text-sm font-medium rounded-md text-gray-700 hover:bg-gray-200 hover:text-gray-900 opacity-50 cursor-not-allowed"
+                        href="/dashboard/settings"
+                        className="group flex items-center px-2 py-2 text-sm font-medium rounded-md text-gray-700 hover:bg-gray-200 hover:text-gray-900"
                     >
                         <span className="truncate">Settings</span>
                     </Link>
