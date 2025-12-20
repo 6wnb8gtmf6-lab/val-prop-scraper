@@ -31,11 +31,16 @@ export async function scrapeAndProcess(targetId: string) {
         const userPrompt = target.prompt ? `Additional Instructions: ${target.prompt}` : "";
 
         const systemMessage = `You are a helpful assistant that extracts structured information from web page text about credit cards or financial products.
-        You MUST return the result as a valid JSON object with the following keys:
-        - "APR": The Annual Percentage Rate details.
-        - "Points Earned": Details about points, miles, or rewards currency.
-        - "Cash Back": Details about cash back offers.
-        - "Benefits": Other key benefits or perks.
+        You MUST return the result as a valid JSON object with the following structure:
+        {
+            "summary": "A concise text summary of the value proposition and key features (max 3 sentences).",
+            "structured": {
+                "APR": "The Annual Percentage Rate details.",
+                "Points Earned": "Details about points, miles, or rewards currency.",
+                "Cash Back": "Details about cash back offers.",
+                "Benefits": "Other key benefits or perks."
+            }
+        }
         
         If a field is not found, use "N/A". return ONLY the JSON object, no markdown formatting.`;
 

@@ -76,17 +76,38 @@ export default async function Page({ params }: { params: Promise<{ id: string }>
                                 </div>
                                 <div className="mt-2 sm:flex sm:justify-between">
                                     <div className="sm:flex">
-                                        <div className="flex items-center text-sm text-gray-500">
-                                            {scan.extractedData ? (
-                                                <div className="flex flex-col gap-2">
-                                                    <span className="whitespace-pre-wrap line-clamp-2">{scan.extractedData.substring(0, 100)}...</span>
-                                                    <Link href={`/dashboard/scan/${scan.id}`} className="text-indigo-600 hover:text-indigo-900 font-medium">
-                                                        View Results &rarr;
-                                                    </Link>
-                                                </div>
-                                            ) : (
-                                                <span className="text-red-500">{scan.errorMessage}</span>
-                                            )}
+                                        <div className="flex items-center text-sm text-gray-500 w-full">
+                                            {(() => {
+                                                if (!scan.extractedData) return <span className="text-red-500">{scan.errorMessage}</span>;
+
+                                                let summary = scan.extractedData;
+                                                let hasStructured = false;
+
+                                                try {
+                                                    const parsed = JSON.parse(scan.extractedData);
+                                                    if (parsed.summary) {
+                                                        summary = parsed.summary;
+                                                        hasStructured = !!parsed.structured;
+                                                    } else if (parsed.APR || parsed.Benefits) {
+                                                        // Fallback for the intermediate format we just shipped
+                                                        summary = "Structured data available (Click View Results)";
+                                                        hasStructured = true;
+                                                    }
+                                                } catch (e) {
+                                                    // Plain text or invalid JSON
+                                                }
+
+                                                return (
+                                                    <div className="flex flex-col gap-2 w-full">
+                                                        <span className="whitespace-pre-wrap">{summary}</span>
+                                                        {(hasStructured || summary !== scan.extractedData) && (
+                                                            <Link href={`/dashboard/scan/${scan.id}`} className="text-indigo-600 hover:text-indigo-900 font-medium self-start">
+                                                                View Results &rarr;
+                                                            </Link>
+                                                        )}
+                                                    </div>
+                                                );
+                                            })()}
                                         </div>
                                     </div>
                                 </div>
