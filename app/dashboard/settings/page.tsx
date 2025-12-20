@@ -7,15 +7,22 @@ import { useSession } from "next-auth/react"
 export default function SettingsPage() {
     const { data: session } = useSession()
     const [status, setStatus] = useState<"idle" | "loading" | "success" | "error">("idle")
+    const [errorMessage, setErrorMessage] = useState<string>("")
 
     const handleRegisterPasskey = async () => {
         setStatus("loading")
+        setErrorMessage("")
         try {
             await signIn("webauthn", { action: "register", redirect: false })
             setStatus("success")
         } catch (error) {
             console.error("Failed to register passkey", error)
             setStatus("error")
+            if (error instanceof Error) {
+                setErrorMessage(error.message)
+            } else {
+                setErrorMessage("An unknown error occurred")
+            }
         }
     }
 
@@ -66,7 +73,7 @@ export default function SettingsPage() {
                             <div className="flex">
                                 <div className="ml-3">
                                     <p className="text-sm font-medium text-red-800 dark:text-red-200">
-                                        Failed to register passkey. Please try again.
+                                        Failed to register passkey. {errorMessage && <span className="block mt-1 font-mono text-xs">{errorMessage}</span>}
                                     </p>
                                 </div>
                             </div>
