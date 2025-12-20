@@ -172,7 +172,7 @@ export async function updateTargetConfig(
         return { error: 'Invalid fields' };
     }
 
-    const { schedule, prompt, customFields } = data.data;
+    const { schedule, prompt, customFields, active } = data.data;
 
     // Verify ownership
     const target = await prisma.targetURL.findUnique({
