@@ -144,7 +144,7 @@ export async function triggerScan(targetId: string) {
     }
 }
 
-export async function updateTargetSchedule(
+export async function updateTargetConfig(
     targetId: string,
     formData: FormData
 ) {
@@ -153,17 +153,19 @@ export async function updateTargetSchedule(
 
     const schema = z.object({
         schedule: z.string(),
+        prompt: z.string().optional(),
     });
 
     const data = schema.safeParse({
         schedule: formData.get('schedule'),
+        prompt: formData.get('prompt'),
     });
 
     if (!data.success) {
-        return { error: 'Invalid schedule' };
+        return { error: 'Invalid fields' };
     }
 
-    const { schedule } = data.data;
+    const { schedule, prompt } = data.data;
 
     // Verify ownership
     const target = await prisma.targetURL.findUnique({
@@ -177,10 +179,13 @@ export async function updateTargetSchedule(
     try {
         await prisma.targetURL.update({
             where: { id: targetId },
-            data: { schedule },
+            data: {
+                schedule,
+                prompt: prompt || null, // Handle empty string as null if preferred, or keep as string
+            },
         });
     } catch (error) {
-        return { error: 'Failed to update schedule' };
+        return { error: 'Failed to update configuration' };
     }
 
     redirect(`/dashboard/${targetId}`);
