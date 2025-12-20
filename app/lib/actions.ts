@@ -308,3 +308,126 @@ export async function deleteTarget(targetId: string) {
 
     redirect('/dashboard');
 }
+
+import OpenAI from 'openai';
+
+const openai = new OpenAI({
+    apiKey: process.env.OPENAI_API_KEY,
+});
+
+export async function generateProposals(
+    prevState: string | undefined,
+    formData: FormData,
+) {
+    const session = await auth();
+    if (!session?.user?.id) return 'Not authenticated';
+
+    const prompt = formData.get('prompt');
+    if (!prompt || typeof prompt !== 'string' || prompt.length < 5) {
+        return 'Please provide a valid prompt (min 5 chars).';
+    }
+
+    try {
+        const completion = await openai.chat.completions.create({
+            messages: [
+                {
+                    role: "system",
+                    content: "You are a helpful assistant that generates a list of target URLs based on a user's topic. You must return a valid JSON object with a 'proposals' array. Each item in the array must have: 'url', 'title', 'description'."
+                },
+                {
+                    role: "user",
+                    content: `Topic: ${prompt}. Return 5-10 relevant URLs that would be good candidates for analyzing value propositions.`
+                }
+            ],
+            model: "gpt-4o",
+            response_format: { type: "json_object" },
+        });
+
+        const content = completion.choices[0].message.content;
+        if (!content) return 'Failed to generate proposals.';
+
+        const result = JSON.parse(content);
+        const proposals = result.proposals;
+
+        if (!Array.isArray(proposals)) return 'Invalid response format from AI.';
+
+        // Save to DB
+        await prisma.$transaction(
+            proposals.map((p: any) =>
+                prisma.proposedTarget.create({
+                    data: {
+                        url: p.url,
+                        title: p.title || 'Untitled',
+                        description: p.description,
+                        sourcePrompt: prompt,
+                        userId: session.user.id!,
+                        status: 'PENDING',
+                    }
+                })
+            )
+        );
+
+    } catch (error) {
+        console.error('Discovery error:', error);
+        return 'Failed to generate proposals. Please try again.';
+    }
+
+    redirect('/dashboard/discovery');
+}
+
+export async function promoteProposal(proposalId: string) {
+    const session = await auth();
+    if (!session?.user?.id) return { error: 'Not authenticated' };
+
+    const proposal = await prisma.proposedTarget.findUnique({
+        where: { id: proposalId },
+    });
+
+    if (!proposal || proposal.userId !== session.user.id) {
+        return { error: 'Unauthorized' };
+    }
+
+    try {
+        await prisma.$transaction([
+            prisma.targetURL.create({
+                data: {
+                    url: proposal.url,
+                    name: proposal.title,
+                    userId: session.user.id,
+                },
+            }),
+            prisma.proposedTarget.update({
+                where: { id: proposalId },
+                data: { status: 'PROMOTED' },
+            }),
+        ]);
+    } catch (error) {
+        return { error: 'Failed to promote proposal' };
+    }
+
+    redirect('/dashboard/discovery');
+}
+
+export async function dismissProposal(proposalId: string) {
+    const session = await auth();
+    if (!session?.user?.id) return { error: 'Not authenticated' };
+
+    const proposal = await prisma.proposedTarget.findUnique({
+        where: { id: proposalId },
+    });
+
+    if (!proposal || proposal.userId !== session.user.id) {
+        return { error: 'Unauthorized' };
+    }
+
+    try {
+        await prisma.proposedTarget.update({
+            where: { id: proposalId },
+            data: { status: 'DISMISSED' },
+        });
+    } catch (error) {
+        return { error: 'Failed to dismiss proposal' };
+    }
+
+    redirect('/dashboard/discovery');
+}

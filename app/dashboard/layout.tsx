@@ -38,6 +38,13 @@ export default async function DashboardLayout({
                     </Link>
 
                     <Link
+                        href="/dashboard/discovery"
+                        className="group flex items-center px-2 py-2 text-sm font-medium rounded-md text-gray-700 hover:bg-gray-200 hover:text-gray-900"
+                    >
+                        <span className="truncate">Discovery</span>
+                    </Link>
+
+                    <Link
                         href="/dashboard/users"
                         className="group flex items-center px-2 py-2 text-sm font-medium rounded-md text-gray-700 hover:bg-gray-200 hover:text-gray-900"
                     >
