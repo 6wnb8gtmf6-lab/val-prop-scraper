@@ -51,15 +51,15 @@ export default async function Page() {
                                 <tbody className="divide-y divide-gray-200 bg-white">
                                     {targets.map((target) => (
                                         <tr key={target.id}>
-                                            <td className="whitespace-nowrap py-4 pl-4 pr-3 text-sm font-medium text-gray-900 sm:pl-6">
+                                            <td className="py-4 pl-4 pr-3 text-sm font-medium text-gray-900 sm:pl-6 max-w-[200px] break-words">
                                                 {target.name}
                                                 {!target.active && (
-                                                    <span className="ml-2 inline-flex items-center rounded-full bg-yellow-100 px-2.5 py-0.5 text-xs font-medium text-yellow-800">
+                                                    <span className="ml-2 inline-flex items-center rounded-full bg-yellow-100 px-2.5 py-0.5 text-xs font-medium text-yellow-800 whitespace-nowrap">
                                                         Suspended
                                                     </span>
                                                 )}
                                             </td>
-                                            <td className="whitespace-nowrap px-3 py-4 text-sm text-gray-500">
+                                            <td className="px-3 py-4 text-sm text-gray-500 max-w-[200px] truncate">
                                                 {target.url}
                                             </td>
                                             <td className="whitespace-nowrap px-3 py-4 text-sm text-gray-500">
