@@ -57,6 +57,7 @@ export default async function Page({ params }: { params: Promise<{ id: string }>
                     targetId={target.id}
                     initialSchedule={target.schedule}
                     initialPrompt={target.prompt}
+                    initialCustomFields={target.customFields}
                 />
             </div>
 

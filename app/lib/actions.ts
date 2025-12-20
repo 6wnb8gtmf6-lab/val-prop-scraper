@@ -91,6 +91,7 @@ export async function createTarget(
         url: z.string().url(),
         schedule: z.string(),
         prompt: z.string().optional(),
+        customFields: z.string().optional().transform(val => val ? val.split(',').map(s => s.trim()).filter(Boolean) : undefined),
     });
 
     const data = schema.safeParse({
@@ -98,6 +99,7 @@ export async function createTarget(
         url: formData.get('url'),
         schedule: formData.get('schedule'),
         prompt: formData.get('prompt'),
+        customFields: formData.get('customFields'),
     });
 
     if (!data.success) {
@@ -109,6 +111,7 @@ export async function createTarget(
             data: {
                 ...data.data,
                 userId: session.user.id,
+                // If customFields is undefined, Prisma uses default from schema
             },
         });
     } catch (error) {
@@ -154,18 +157,20 @@ export async function updateTargetConfig(
     const schema = z.object({
         schedule: z.string(),
         prompt: z.string().optional(),
+        customFields: z.string().optional().transform(val => val ? val.split(',').map(s => s.trim()).filter(Boolean) : undefined),
     });
 
     const data = schema.safeParse({
         schedule: formData.get('schedule'),
         prompt: formData.get('prompt'),
+        customFields: formData.get('customFields'),
     });
 
     if (!data.success) {
         return { error: 'Invalid fields' };
     }
 
-    const { schedule, prompt } = data.data;
+    const { schedule, prompt, customFields } = data.data;
 
     // Verify ownership
     const target = await prisma.targetURL.findUnique({
@@ -177,12 +182,19 @@ export async function updateTargetConfig(
     }
 
     try {
+        // Only update customFields if provided (handle undefined vs empty array)
+        const updateData: any = {
+            schedule,
+            prompt: prompt || null,
+        };
+
+        if (customFields !== undefined) {
+            updateData.customFields = customFields;
+        }
+
         await prisma.targetURL.update({
             where: { id: targetId },
-            data: {
-                schedule,
-                prompt: prompt || null, // Handle empty string as null if preferred, or keep as string
-            },
+            data: updateData,
         });
     } catch (error) {
         return { error: 'Failed to update configuration' };

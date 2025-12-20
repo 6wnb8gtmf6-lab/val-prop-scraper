@@ -30,16 +30,21 @@ export async function scrapeAndProcess(targetId: string) {
         // 2. Process with LLM
         const userPrompt = target.prompt ? `Additional Instructions: ${target.prompt}` : "";
 
+        // Build dynamic schema from customFields or default
+        const fieldsToExtract = target.customFields && target.customFields.length > 0
+            ? target.customFields
+            : ["APR", "Points Earned", "Cash Back", "Benefits"];
+
+        const fieldSchema = fieldsToExtract.reduce((acc: Record<string, string>, field: string) => {
+            acc[field] = `Extract details regarding ${field}.`;
+            return acc;
+        }, {} as Record<string, string>);
+
         const systemMessage = `You are a helpful assistant that extracts structured information from web page text about credit cards or financial products.
         You MUST return the result as a valid JSON object with the following structure:
         {
             "summary": "A concise text summary of the value proposition and key features (max 3 sentences).",
-            "structured": {
-                "APR": "The Annual Percentage Rate details.",
-                "Points Earned": "Details about points, miles, or rewards currency.",
-                "Cash Back": "Details about cash back offers.",
-                "Benefits": "Other key benefits or perks."
-            }
+            "structured": ${JSON.stringify(fieldSchema, null, 4)}
         }
         
         If a field is not found, use "N/A". return ONLY the JSON object, no markdown formatting.`;

@@ -82,6 +82,25 @@ export default function Page() {
                     </div>
                 </div>
 
+                <div>
+                    <label htmlFor="customFields" className="block text-sm font-medium text-gray-700">
+                        Fields to Extract (comma separated)
+                    </label>
+                    <div className="mt-1">
+                        <input
+                            type="text"
+                            name="customFields"
+                            id="customFields"
+                            defaultValue="APR, Points Earned, Cash Back, Benefits"
+                            className="block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm px-3 py-2 border"
+                            placeholder="APR, Annual Fee, Welcome Bonus"
+                        />
+                        <p className="mt-1 text-xs text-gray-500">
+                            These columns will appear in the extracted data table.
+                        </p>
+                    </div>
+                </div>
+
                 <div className="flex justify-end gap-3">
                     <Link href="/dashboard" className="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-md hover:bg-gray-50">
                         Cancel
