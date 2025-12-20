@@ -190,3 +190,82 @@ export async function updateTargetConfig(
 
     redirect(`/dashboard/${targetId}`);
 }
+
+export async function createUser(
+    prevState: string | undefined,
+    formData: FormData,
+) {
+    const session = await auth();
+    if (!session?.user?.id) return 'Not authenticated';
+
+    const schema = z.object({
+        email: z.string().email(),
+        password: z.string().min(6),
+        name: z.string().min(1),
+    });
+
+    const data = schema.safeParse({
+        email: formData.get('email'),
+        password: formData.get('password'),
+        name: formData.get('name'),
+    });
+
+    if (!data.success) {
+        return 'Invalid fields';
+    }
+
+    const { email, password, name } = data.data;
+
+    try {
+        const existingUser = await prisma.user.findUnique({ where: { email } });
+        if (existingUser) return 'User already exists.';
+
+        const hashedPassword = await bcrypt.hash(password, 10);
+        await prisma.user.create({
+            data: {
+                email,
+                password: hashedPassword,
+                name,
+            },
+        });
+    } catch (error) {
+        return 'Failed to create user.';
+    }
+
+    redirect('/dashboard/users');
+}
+
+export async function updateUserPassword(
+    userId: string,
+    formData: FormData
+) {
+    const session = await auth();
+    if (!session?.user?.id) return { error: 'Not authenticated' };
+
+    const schema = z.object({
+        password: z.string().min(6),
+    });
+
+    const data = schema.safeParse({
+        password: formData.get('password'),
+    });
+
+    if (!data.success) {
+        return { error: 'Password must be at least 6 characters' };
+    }
+
+    const { password } = data.data;
+
+    try {
+        const hashedPassword = await bcrypt.hash(password, 10);
+        await prisma.user.update({
+            where: { id: userId },
+            data: { password: hashedPassword },
+        });
+    } catch (error) {
+        return { error: 'Failed to update password' };
+    }
+
+    // Don't redirect, just return success so UI can show a toast or message
+    return { success: 'Password updated successfully' };
+}
