@@ -158,12 +158,14 @@ export async function updateTargetConfig(
         schedule: z.string(),
         prompt: z.string().optional(),
         customFields: z.string().optional().transform(val => val ? val.split(',').map(s => s.trim()).filter(Boolean) : undefined),
+        active: z.coerce.boolean(),
     });
 
     const data = schema.safeParse({
         schedule: formData.get('schedule'),
         prompt: formData.get('prompt'),
         customFields: formData.get('customFields'),
+        active: formData.get('active'),
     });
 
     if (!data.success) {
@@ -280,4 +282,28 @@ export async function updateUserPassword(
 
     // Don't redirect, just return success so UI can show a toast or message
     return { success: 'Password updated successfully' };
+}
+
+export async function deleteTarget(targetId: string) {
+    const session = await auth();
+    if (!session?.user?.id) return { error: 'Not authenticated' };
+
+    // Verify ownership
+    const target = await prisma.targetURL.findUnique({
+        where: { id: targetId },
+    });
+
+    if (!target || target.userId !== session.user.id) {
+        return { error: 'Unauthorized' };
+    }
+
+    try {
+        await prisma.targetURL.delete({
+            where: { id: targetId },
+        });
+    } catch (error) {
+        return { error: 'Failed to delete target' };
+    }
+
+    redirect('/dashboard');
 }

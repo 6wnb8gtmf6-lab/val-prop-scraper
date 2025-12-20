@@ -80,6 +80,7 @@ model TargetURL {
   schedule    String       @default("daily") // daily, weekly, etc.
   prompt      String?      // Specific prompt for this URL, overrides global if any
   customFields String[]    @default(["APR", "Points Earned", "Cash Back", "Benefits"])
+  active       Boolean     @default(true)
   userId      String
   user        User         @relation(fields: [userId], references: [id], onDelete: Cascade)
   createdAt   DateTime     @default(now())

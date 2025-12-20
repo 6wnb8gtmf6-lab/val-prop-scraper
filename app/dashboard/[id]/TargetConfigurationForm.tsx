@@ -8,9 +8,10 @@ interface Props {
     initialSchedule: string;
     initialPrompt?: string | null;
     initialCustomFields?: string[];
+    initialActive: boolean;
 }
 
-export default function TargetConfigurationForm({ targetId, initialSchedule, initialPrompt, initialCustomFields }: Props) {
+export default function TargetConfigurationForm({ targetId, initialSchedule, initialPrompt, initialCustomFields, initialActive }: Props) {
     const [isPending, setIsPending] = useState(false);
 
     const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
@@ -68,6 +69,24 @@ export default function TargetConfigurationForm({ targetId, initialSchedule, ini
                         <p className="mt-1 text-xs text-gray-500">
                             Comma separated list of columns to extract.
                         </p>
+                    </dd>
+                </div>
+                <div className="py-4 sm:py-5 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-6">
+                    <dt className="text-sm font-medium text-gray-500 self-center">Status</dt>
+                    <dd className="mt-1 text-sm text-gray-900 sm:mt-0 sm:col-span-2">
+                        <div className="flex items-center">
+                            <input
+                                id="active"
+                                name="active"
+                                type="checkbox"
+                                defaultChecked={initialActive}
+                                value="true"
+                                className="h-4 w-4 rounded border-gray-300 text-indigo-600 focus:ring-indigo-500"
+                            />
+                            <label htmlFor="active" className="ml-2 block text-sm text-gray-900">
+                                Active (enable periodic scans)
+                            </label>
+                        </div>
                     </dd>
                 </div>
                 <div className="py-4 sm:py-5 sm:px-6 flex justify-end">
