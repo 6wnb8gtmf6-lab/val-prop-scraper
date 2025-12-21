@@ -1,5 +1,6 @@
 import { auth, signOut } from "@/auth";
 import Link from "next/link";
+import DashboardHeader from "./DashboardHeader";
 
 export default async function DashboardLayout({
     children,
@@ -83,17 +84,7 @@ export default async function DashboardLayout({
             {/* Main Content Area */}
             <div className="flex-1 flex flex-col overflow-hidden">
                 {/* Top Header / Breadcrumbs */}
-                <header className="h-16 flex items-center justify-between px-8 border-b border-gray-200 bg-white">
-                    <div className="flex items-center text-sm text-gray-500">
-                        <span className="font-medium text-gray-900">Personal</span>
-                        <span className="mx-2">/</span>
-                        <span>Value Proposition Evaluator</span>
-                    </div>
-                    <div className="flex items-center space-x-4">
-                        <Link href="/dashboard" className="text-sm font-medium text-gray-500 hover:text-gray-900">Docs</Link>
-                        <Link href="/dashboard" className="text-sm font-medium text-gray-500 hover:text-gray-900">API Reference</Link>
-                    </div>
-                </header>
+                <DashboardHeader />
 
                 {/* Scrollable Content */}
                 <main className="flex-1 overflow-y-auto p-8">
