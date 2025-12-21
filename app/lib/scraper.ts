@@ -42,7 +42,7 @@ export async function scrapeAndProcess(targetId: string) {
         }
 
         const page = await browser.newPage();
-        const response = await page.goto(target.url, { waitUntil: 'networkidle2', timeout: 30000 });
+        const response = await page.goto(target.url, { waitUntil: 'domcontentloaded', timeout: 60000 });
 
         // Check HTTP Status
         if (!response || !response.ok()) {
