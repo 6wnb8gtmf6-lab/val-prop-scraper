@@ -40,3 +40,15 @@ export async function getProposals() {
         },
     });
 }
+
+export async function getUserSettings() {
+    const session = await auth();
+    if (!session?.user?.id) return null;
+
+    const user = await prisma.user.findUnique({
+        where: { id: session.user.id },
+        select: { timezone: true },
+    });
+
+    return user;
+}

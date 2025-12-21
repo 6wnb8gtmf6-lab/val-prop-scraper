@@ -6,6 +6,8 @@ import TargetConfigurationForm from './TargetConfigurationForm';
 import DeleteTargetButton from './DeleteTargetButton';
 import Link from 'next/link';
 import ScanButton from '../ScanButton';
+import { getUserSettings } from '@/app/lib/data';
+import { formatDate } from '@/app/lib/date-utils';
 
 export default async function Page({ params }: { params: Promise<{ id: string }> }) {
     const resolvedParams = await params;
@@ -13,6 +15,9 @@ export default async function Page({ params }: { params: Promise<{ id: string }>
     const { id } = resolvedParams;
     const session = await auth();
     if (!session?.user?.id) redirect('/login');
+
+    const user = await getUserSettings();
+    const timezone = user?.timezone || 'UTC';
 
     console.log('Querying for ID:', id);
 
@@ -93,7 +98,7 @@ export default async function Page({ params }: { params: Promise<{ id: string }>
                                     <p className="truncate text-sm font-medium text-indigo-600">{scan.status}</p>
                                     <div className="ml-2 flex flex-shrink-0">
                                         <p className="inline-flex rounded-full bg-green-100 px-2 text-xs font-semibold leading-5 text-green-800">
-                                            {new Date(scan.createdAt).toLocaleString()}
+                                            {formatDate(scan.createdAt, timezone)}
                                         </p>
                                     </div>
                                 </div>

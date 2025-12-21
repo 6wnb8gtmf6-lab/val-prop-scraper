@@ -430,5 +430,31 @@ export async function dismissProposal(proposalId: string) {
         return { error: 'Failed to dismiss proposal' };
     }
 
+
     redirect('/dashboard/discovery');
+}
+
+export async function updateSettings(
+    prevState: string | undefined,
+    formData: FormData,
+) {
+    const session = await auth();
+    if (!session?.user?.id) return 'Not authenticated';
+
+    const timezone = formData.get('timezone');
+
+    if (!timezone || typeof timezone !== 'string') {
+        return 'Invalid timezone';
+    }
+
+    try {
+        await prisma.user.update({
+            where: { id: session.user.id },
+            data: { timezone },
+        });
+    } catch (error) {
+        return 'Failed to update settings';
+    }
+
+    return 'Settings updated';
 }

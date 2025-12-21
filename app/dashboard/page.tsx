@@ -1,10 +1,13 @@
-import { getTargetUrls } from '@/app/lib/data';
+import { getTargetUrls, getUserSettings } from '@/app/lib/data';
 import { triggerScan } from '@/app/lib/actions';
 import Link from 'next/link';
 import ScanButton from './ScanButton';
+import { formatDate } from '@/app/lib/date-utils';
 
 export default async function Page() {
     const targets = await getTargetUrls();
+    const user = await getUserSettings();
+    const timezone = user?.timezone || 'UTC';
 
     return (
         <div>
@@ -66,7 +69,9 @@ export default async function Page() {
                                                 {target.schedule}
                                             </td>
                                             <td className="whitespace-nowrap px-3 py-4 text-sm text-gray-500">
-                                                {target.scanResults[0]?.status || 'Never'}
+                                                {target.scanResults[0]?.createdAt
+                                                    ? formatDate(target.scanResults[0].createdAt, timezone)
+                                                    : 'Never'}
                                             </td>
                                             <td className="relative whitespace-nowrap py-4 pl-3 pr-4 text-right text-sm font-medium sm:pr-6">
                                                 <div className="flex justify-end gap-2">
