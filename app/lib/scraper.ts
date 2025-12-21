@@ -1,6 +1,7 @@
-import * as cheerio from 'cheerio';
 import OpenAI from 'openai';
 import { prisma } from '@/lib/prisma';
+import puppeteer from 'puppeteer-core';
+import chromium from '@sparticuz/chromium-min';
 
 export async function scrapeAndProcess(targetId: string) {
     const openai = new OpenAI({
@@ -14,18 +15,50 @@ export async function scrapeAndProcess(targetId: string) {
 
         if (!target) throw new Error('Target not found');
 
-        // 1. Fetch content
-        const response = await fetch(target.url);
-        const html = await response.text();
-        const $ = cheerio.load(html);
+        // 1. Launch Browser
+        const isLocal = process.env.NODE_ENV === 'development';
 
-        // Remove scripts, styles, and comments to reduce noise
-        $('script').remove();
-        $('style').remove();
-        $('noscript').remove();
-        $('iframe').remove();
+        let browser;
+        if (isLocal) {
+            // For local dev, try to find local chrome installation.
+            const executablePath = '/Applications/Google Chrome.app/Contents/MacOS/Google Chrome';
 
-        const textContent = $('body').text().replace(/\s+/g, ' ').trim().substring(0, 15000); // Limit context window
+            browser = await puppeteer.launch({
+                args: isLocal ? puppeteer.defaultArgs() : chromium.args,
+                defaultViewport: { width: 1920, height: 1080 },
+                executablePath: isLocal ? executablePath : await chromium.executablePath(),
+                headless: true,
+                ignoreHTTPSErrors: true,
+            } as any);
+        } else {
+            // Production (Vercel)
+            browser = await puppeteer.launch({
+                args: chromium.args,
+                defaultViewport: { width: 1920, height: 1080 },
+                executablePath: await chromium.executablePath('https://github.com/Sparticuz/chromium/releases/download/v131.0.1/chromium-v131.0.1-pack.tar'),
+                headless: true,
+                ignoreHTTPSErrors: true,
+            } as any);
+        }
+
+        const page = await browser.newPage();
+        await page.goto(target.url, { waitUntil: 'networkidle2', timeout: 30000 });
+
+        // Screenshot
+        const screenshotBuffer = await page.screenshot({ type: 'jpeg', quality: 60, encoding: 'base64' });
+        const screenshot = `data:image/jpeg;base64,${screenshotBuffer}`;
+
+        // Extract Text
+        // Remove scripts/styles
+        await page.evaluate(() => {
+            document.querySelectorAll('script, style, noscript, iframe').forEach(el => el.remove());
+        });
+
+        const textContent = await page.evaluate(() => {
+            return document.body.innerText.replace(/\s+/g, ' ').trim().substring(0, 15000);
+        });
+
+        await browser.close();
 
         // 2. Process with LLM
         const userPrompt = target.prompt ? `Additional Instructions: ${target.prompt}` : "";
@@ -54,7 +87,7 @@ export async function scrapeAndProcess(targetId: string) {
                 { role: "system", content: systemMessage },
                 { role: "user", content: `${userPrompt}\n\nWeb Page Text:\n${textContent}` }
             ],
-            model: "gpt-3.5-turbo",
+            model: "gpt-4o",
         });
 
         const extractedData = completion.choices[0].message.content;
@@ -66,6 +99,7 @@ export async function scrapeAndProcess(targetId: string) {
                 status: 'SUCCESS',
                 content: textContent.substring(0, 5000), // Save a snippet of raw text
                 extractedData: extractedData,
+                screenshot: screenshot,
             },
         });
 

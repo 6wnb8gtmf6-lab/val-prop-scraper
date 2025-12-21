@@ -98,6 +98,7 @@ model ScanResult {
   content       String?   // Raw scraped content (optional, maybe truncated)
   extractedData String?   // JSON string or text of extracted info
   errorMessage  String?
+  screenshot    String?   // Base64 string of the screenshot
   createdAt     DateTime  @default(now())
 }
 
