@@ -1,5 +1,6 @@
 import { getUserSettings } from '@/app/lib/data';
 import SettingsForm from './SettingsForm';
+import PasskeySection from './PasskeySection';
 
 export default async function Page() {
     const user = await getUserSettings();
@@ -25,6 +26,10 @@ export default async function Page() {
                         <SettingsForm initialTimezone={user.timezone} />
                     </div>
                 </div>
+            </div>
+
+            <div className="mt-8">
+                <PasskeySection />
             </div>
         </div>
     );
