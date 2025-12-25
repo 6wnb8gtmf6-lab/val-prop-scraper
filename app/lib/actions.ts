@@ -374,9 +374,43 @@ export async function generateProposals(
 
         if (!Array.isArray(proposals)) return 'Invalid response format from AI.';
 
+        // Validate URLs via HTTP check
+        const validProposals = (await Promise.all(proposals.map(async (p: any) => {
+            try {
+                const checkUrl = async (method: string) => {
+                    const controller = new AbortController();
+                    const timeoutId = setTimeout(() => controller.abort(), 3000); // 3s timeout
+                    try {
+                        const res = await fetch(p.url, {
+                            method,
+                            signal: controller.signal,
+                            headers: { 'User-Agent': 'Mozilla/5.0 (compatible; ValuePropScraper/1.0;)' }
+                        });
+                        return res.ok;
+                    } catch (e) {
+                        return false;
+                    } finally {
+                        clearTimeout(timeoutId);
+                    }
+                };
+
+                // Try HEAD first, then GET
+                let isValid = await checkUrl('HEAD');
+                if (!isValid) {
+                    isValid = await checkUrl('GET');
+                }
+
+                return isValid ? p : null;
+            } catch (e) {
+                return null;
+            }
+        }))).filter((p: any) => p !== null);
+
+        if (validProposals.length === 0) return 'No valid URLs found in generation results.';
+
         // Save to DB
         await prisma.$transaction(
-            proposals.map((p: any) =>
+            validProposals.map((p: any) =>
                 prisma.proposedTarget.create({
                     data: {
                         url: p.url,
