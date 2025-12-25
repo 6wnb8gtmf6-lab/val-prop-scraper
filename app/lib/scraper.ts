@@ -47,7 +47,7 @@ export async function scrapeAndProcess(targetId: string) {
         // Check HTTP Status
         if (!response || !response.ok()) {
             const status = response ? response.status() : 'Unknown';
-            throw new Error(`HTTP Error: ${status}`);
+            throw new Error(`HTTP Error: ${status} for URL: ${target.url}`);
         }
 
         // Screenshot
