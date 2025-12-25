@@ -1,6 +1,5 @@
 import { getProposals } from '@/app/lib/data';
-import DiscoveryForm from './DiscoveryForm';
-import ProposalList from './ProposalList';
+import DiscoveryContent from './DiscoveryContent';
 
 export default async function Page() {
     const proposals = await getProposals();
@@ -18,10 +17,7 @@ export default async function Page() {
                 </div>
             </div>
 
-            <DiscoveryForm />
-
-            <h3 className="mt-8 text-lg font-medium leading-6 text-gray-900">Proposed URLs</h3>
-            <ProposalList proposals={proposals} />
+            <DiscoveryContent proposals={proposals} />
         </div>
     );
 }

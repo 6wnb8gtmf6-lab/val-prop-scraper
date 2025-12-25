@@ -11,7 +11,7 @@ type Proposal = {
     status: string;
 };
 
-export default function ProposalList({ proposals }: { proposals: Proposal[] }) {
+export default function ProposalList({ proposals, isGenerating }: { proposals: Proposal[], isGenerating?: boolean }) {
     const [processingId, setProcessingId] = useState<string | null>(null);
 
     const handlePromote = async (id: string) => {
@@ -29,7 +29,9 @@ export default function ProposalList({ proposals }: { proposals: Proposal[] }) {
     if (proposals.length === 0) {
         return (
             <div className="text-center py-12">
-                <p className="text-gray-500">No proposals found. Try generating some above.</p>
+                <p className="text-gray-500">
+                    {isGenerating ? 'Working on it...' : 'No proposals found. Try generating some above.'}
+                </p>
             </div>
         );
     }
