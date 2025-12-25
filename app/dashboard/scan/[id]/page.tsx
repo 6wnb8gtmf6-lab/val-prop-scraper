@@ -2,6 +2,8 @@ import { prisma } from '@/lib/prisma';
 import { notFound } from 'next/navigation';
 import Link from 'next/link';
 
+import ScanReviewControls from './ScanReviewControls';
+
 export default async function ScanResultPage({ params }: { params: Promise<{ id: string }> }) {
     const { id } = await params;
 
@@ -17,6 +19,7 @@ export default async function ScanResultPage({ params }: { params: Promise<{ id:
     let summary: string | null = null;
     let tableData: any = null;
     let isJson = false;
+    let hasStructuredData = false;
 
     if (result.extractedData) {
         try {
@@ -27,9 +30,11 @@ export default async function ScanResultPage({ params }: { params: Promise<{ id:
                     // New Format
                     summary = parsed.summary;
                     tableData = parsed.structured;
+                    hasStructuredData = true;
                 } else {
                     // Previous Format (direct APR etc.)
                     tableData = parsed;
+                    hasStructuredData = true; // technically it is structured
                 }
             }
         } catch (e) {
@@ -55,6 +60,12 @@ export default async function ScanResultPage({ params }: { params: Promise<{ id:
                     Back to Target
                 </Link>
             </div>
+
+            <ScanReviewControls
+                scanId={result.id}
+                currentStatus={result.reviewStatus}
+                hasStructuredData={hasStructuredData}
+            />
 
             {isJson ? (
                 <div className="space-y-6">

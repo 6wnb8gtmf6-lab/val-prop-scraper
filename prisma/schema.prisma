@@ -88,6 +88,7 @@ model TargetURL {
   createdAt   DateTime     @default(now())
   updatedAt   DateTime     @updatedAt
   country     String?
+  masterData  String?      // Verified JSON data from an approved scan
   scanResults ScanResult[]
 }
 
@@ -98,6 +99,7 @@ model ScanResult {
   status        String    // PENDING, SUCCESS, FAILED
   content       String?   // Raw scraped content (optional, maybe truncated)
   extractedData String?   // JSON string or text of extracted info
+  reviewStatus  String    @default("PENDING") // PENDING, APPROVED, REJECTED
   errorMessage  String?
   screenshot    String?   // Base64 string of the screenshot
   createdAt     DateTime  @default(now())
