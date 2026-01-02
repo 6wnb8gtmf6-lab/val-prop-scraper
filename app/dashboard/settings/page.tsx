@@ -1,6 +1,7 @@
 import { getUserSettings } from '@/app/lib/data';
 import SettingsForm from './SettingsForm';
 import PasskeySection from './PasskeySection';
+import ExtractionFieldsForm from './ExtractionFieldsForm';
 
 export default async function Page() {
     const user = await getUserSettings();
@@ -22,8 +23,11 @@ export default async function Page() {
             <div className="bg-white shadow sm:rounded-lg">
                 <div className="px-4 py-5 sm:p-6">
                     <h3 className="text-lg font-medium leading-6 text-gray-900">Preferences</h3>
-                    <div className="mt-5">
+                    <div className="mt-5 space-y-8 divide-y divide-gray-200">
                         <SettingsForm initialTimezone={user.timezone} />
+                        <div className="pt-8">
+                            <ExtractionFieldsForm initialFields={user.requiredExtractionFields || ["APR", "Points Earned", "Cash Back", "Benefits"]} />
+                        </div>
                     </div>
                 </div>
             </div>

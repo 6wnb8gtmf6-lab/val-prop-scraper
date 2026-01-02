@@ -27,6 +27,7 @@ model User {
   updatedAt DateTime @updatedAt
   password  String?
   timezone  String   @default("UTC")
+  requiredExtractionFields String[] @default(["APR", "Points Earned", "Cash Back", "Benefits"])
 }
 
 model Account {

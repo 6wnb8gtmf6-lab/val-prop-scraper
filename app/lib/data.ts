@@ -65,7 +65,7 @@ export async function getUserSettings() {
 
     const user = await prisma.user.findUnique({
         where: { id: session.user.id },
-        select: { timezone: true },
+        select: { timezone: true, requiredExtractionFields: true },
     });
 
     return user;
