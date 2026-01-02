@@ -86,14 +86,12 @@ export async function scrapeAndProcess(targetId: string) {
             : ["APR", "Points Earned", "Cash Back", "Benefits"];
 
         // Ensure "Card Brands" is always included
-        if (!fieldsToExtract.includes("Card Brands")) {
-            fieldsToExtract.push("Card Brands");
-        }
-
         // Ensure "Card Brands" is always included
         if (!fieldsToExtract.includes("Card Brands")) {
             fieldsToExtract.push("Card Brands");
         }
+
+        console.log("Scraping with fields:", fieldsToExtract);
 
         const fieldSchema = fieldsToExtract.reduce((acc: Record<string, string>, field: string) => {
             if (field === "Card Brands") {
