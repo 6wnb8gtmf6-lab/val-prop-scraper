@@ -20,7 +20,7 @@ export default async function Page({
 }) {
     const params = await searchParams;
     const query = params?.query || '';
-    const status = (params?.status as 'all' | 'active' | 'suspended') || 'all';
+    const status = (params?.status as 'all' | 'active' | 'suspended') || 'active';
     const sort = params?.sort || 'createdAt';
     const order = (params?.order as 'asc' | 'desc') || 'desc';
 

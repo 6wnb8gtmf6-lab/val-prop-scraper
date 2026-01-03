@@ -12,7 +12,7 @@ export async function getTargetUrls(
     const session = await auth();
     if (!session?.user?.id) return [];
 
-    const where: any = { userId: session.user.id };
+    const where: any = {}; // Removed userId filter to allow global visibility
 
     if (query) {
         where.OR = [

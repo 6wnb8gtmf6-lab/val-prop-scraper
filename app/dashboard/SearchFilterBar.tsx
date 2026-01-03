@@ -44,11 +44,11 @@ export default function SearchFilterBar() {
                 <select
                     className="block w-full rounded-md border-0 py-1.5 pl-3 pr-10 text-gray-900 ring-1 ring-inset ring-gray-300 focus:ring-2 focus:ring-indigo-600 sm:text-sm sm:leading-6"
                     onChange={(e) => handleStatusChange(e.target.value)}
-                    defaultValue={searchParams.get('status')?.toString() || 'all'}
+                    defaultValue={searchParams.get('status')?.toString() || 'active'}
                 >
-                    <option value="all">All Status</option>
-                    <option value="active">Active</option>
-                    <option value="suspended">Suspended</option>
+                    <option value="active">Active Only</option>
+                    <option value="all">All (Include Suspended)</option>
+                    <option value="suspended">Suspended Only</option>
                 </select>
             </div>
         </div>
