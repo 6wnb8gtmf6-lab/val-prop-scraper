@@ -364,6 +364,8 @@ export async function generateProposals(
             ],
             model: "gpt-4o",
             response_format: { type: "json_object" },
+            // @ts-ignore - Custom tool type for this environment
+            tools: [{ type: 'web_search' }],
         });
 
         const content = completion.choices[0].message.content;
