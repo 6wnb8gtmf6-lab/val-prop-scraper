@@ -14,7 +14,8 @@ export async function searchScans(query: string = "") {
 
     const where: any = {
         userId: session.user.id,
-        active: true, // Only show active targets? Or all? Let's say all.
+        active: true,
+        masterData: { not: null }, // Only include targets with master data
     };
 
     if (query.trim()) {
@@ -27,68 +28,52 @@ export async function searchScans(query: string = "") {
             id: true,
             name: true,
             url: true,
-            scanResults: {
-                where: { status: 'SUCCESS' },
-                orderBy: { createdAt: 'desc' },
-                take: 1,
-                select: {
-                    id: true,
-                    createdAt: true,
-                    extractedData: true, // Need data for preview potentially, but definitely for generation
-                }
-            }
+            updatedAt: true,
+            masterData: true,
         },
         orderBy: { name: 'asc' },
-        take: 50 // Limit results
+        take: 50
     });
 
-    // Filter out targets with no successful scans
-    const availableScans = targets
-        .filter(t => t.scanResults.length > 0)
-        .map(t => ({
-            targetId: t.id,
-            targetName: t.name,
-            targetUrl: t.url,
-            scanId: t.scanResults[0].id, // Using the latest scan
-            scanDate: t.scanResults[0].createdAt,
-            // Don't send full data to client list to save bandwidth, unless needed for preview
-        }));
+    const availableTargets = targets.map(t => ({
+        targetId: t.id,
+        targetName: t.name,
+        targetUrl: t.url,
+        updatedAt: t.updatedAt,
+    }));
 
-    return { success: true, scans: availableScans };
+    return { success: true, targets: availableTargets };
 }
 
-export async function generateValueProposition(scanIds: string[], model: string = "gpt-4o") {
+export async function generateValueProposition(targetIds: string[], model: string = "gpt-4o") {
     const session = await auth();
     if (!session?.user?.id) return { error: 'Not authenticated' };
 
-    if (scanIds.length === 0) return { error: 'No scans selected' };
+    if (targetIds.length === 0) return { error: 'No targets selected' };
 
-    // Fetch full data for selected scans
-    // We fetch by scanId directly
-    const scans = await prisma.scanResult.findMany({
+    const targets = await prisma.targetURL.findMany({
         where: {
-            id: { in: scanIds },
-            targetUrl: { userId: session.user.id } // Ensure ownership via relation
+            id: { in: targetIds },
+            userId: session.user.id,
+            masterData: { not: null }
         },
         select: {
-            targetUrl: { select: { name: true } },
-            extractedData: true
+            name: true,
+            masterData: true
         }
     });
 
-    if (scans.length === 0) return { error: 'Scans not found' };
+    if (targets.length === 0) return { error: 'No targets with master data found' };
 
     // Prepare data for LLM
-    const inputs = scans.map(s => {
+    const inputs = targets.map(t => {
         let data = "No data";
         try {
-            if (s.extractedData) {
-                data = s.extractedData;
-                // Try to parse if it's JSON string to just send the relevant parts if needed, 
-                // but sending the raw string is fine for the LLM to contextually understand.
+            if (t.masterData) {
+                data = t.masterData;
             }
         } catch (e) { }
-        return `Target: ${s.targetUrl.name}\nData: ${data}\n---`;
+        return `Target: ${t.name}\nData: ${data}\n---`;
     }).join('\n\n');
 
     try {
@@ -107,7 +92,7 @@ Rules for generation:
                 },
                 {
                     role: "user",
-                    content: `Here are the value propositions from the selected competitors:\n\n${inputs}\n\nGenerate the Perfect Value Proposition.`
+                    content: `Here are the value propositions from the selected competitors (using verified Master Data):\n\n${inputs}\n\nGenerate the Perfect Value Proposition.`
                 }
             ],
             model: model,
