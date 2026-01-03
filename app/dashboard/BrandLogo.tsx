@@ -23,7 +23,7 @@ export const BrandLogo = ({ brand }: { brand: string }) => {
                 src="/brands/visa.png"
                 alt="Visa"
                 title="Visa"
-                className="h-8 w-auto object-contain"
+                className="h-6 w-auto object-contain"
             />
         );
     }
