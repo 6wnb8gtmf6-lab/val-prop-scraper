@@ -28,6 +28,8 @@ export default function GeneratorInterface() {
     const [generatedContent, setGeneratedContent] = useState<string | null>(null);
     const [isGenerating, setIsGenerating] = useState(false);
 
+    const [selectedModel, setSelectedModel] = useState("gpt-4o");
+
     // Initial load
     useEffect(() => {
         handleSearch("");
@@ -57,7 +59,7 @@ export default function GeneratorInterface() {
         setIsGenerating(true);
         setGeneratedContent(null);
 
-        const res = await generateValueProposition(Array.from(selectedScanIds));
+        const res = await generateValueProposition(Array.from(selectedScanIds), selectedModel);
 
         if (res.success && res.content) {
             setGeneratedContent(res.content);
@@ -76,7 +78,7 @@ export default function GeneratorInterface() {
                     <p className="mt-1 text-sm text-gray-500">
                         Search and select scans to synthesize.
                     </p>
-                    <div className="mt-4">
+                    <div className="mt-4 space-y-3">
                         <input
                             type="text"
                             className="shadow-sm focus:ring-indigo-500 focus:border-indigo-500 block w-full sm:text-sm border-gray-300 rounded-md p-2 border"
@@ -87,6 +89,22 @@ export default function GeneratorInterface() {
                                 handleSearch(e.target.value);
                             }}
                         />
+
+                        <div>
+                            <label htmlFor="model" className="block text-xs font-medium text-gray-700 mb-1">AI Model</label>
+                            <select
+                                id="model"
+                                name="model"
+                                className="block w-full pl-3 pr-10 py-2 text-base border-gray-300 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm rounded-md border"
+                                value={selectedModel}
+                                onChange={(e) => setSelectedModel(e.target.value)}
+                            >
+                                <option value="gpt-4o">GPT-4o (Best Quality)</option>
+                                <option value="gpt-4-turbo">GPT-4 Turbo</option>
+                                <option value="gpt-3.5-turbo">GPT-3.5 Turbo (Fastest)</option>
+                                <option value="o1-preview">o1 Preview (Reasoning)</option>
+                            </select>
+                        </div>
                     </div>
                 </div>
 

@@ -57,7 +57,7 @@ export async function searchScans(query: string = "") {
     return { success: true, scans: availableScans };
 }
 
-export async function generateValueProposition(scanIds: string[]) {
+export async function generateValueProposition(scanIds: string[], model: string = "gpt-4o") {
     const session = await auth();
     if (!session?.user?.id) return { error: 'Not authenticated' };
 
@@ -110,7 +110,7 @@ Rules for generation:
                     content: `Here are the value propositions from the selected competitors:\n\n${inputs}\n\nGenerate the Perfect Value Proposition.`
                 }
             ],
-            model: "gpt-4o",
+            model: model,
         });
 
         const content = completion.choices[0].message.content;
